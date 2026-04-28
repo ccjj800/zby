@@ -22,9 +22,14 @@ jobs:
     - name: 安装依赖
       run: pip install requests
 
-    - name: 运行全部脚本
+    - name: 运行全部3个脚本
       run: |
         cd "${{ github.workspace }}/py/iptv源收集检测/主频道/专享频道/py/酒店源"
+        
+        # 先创建空文件，防止报错
+        touch "${{ github.workspace }}/jiudianyuan.txt"
+        
+        # 运行脚本
         python iptv.py
         python iptv2.py
         python gxtv.py
@@ -37,6 +42,7 @@ jobs:
 
     - name: 提交更新
       run: |
+        cd "${{ github.workspace }}"
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add jiudianyuan.txt
