@@ -43,7 +43,7 @@ urls_all = []
 
 # 读取你的酒店IP文件
 try:
-    with open('py/iptv源收集检测/主频道/专享频道/py/酒店源/酒店高清.ip', 'r', encoding='utf-8') as file:
+    with open('../../../../../jiudianyuan.txt', 'w', encoding='utf-8') as f:
         lines = file.readlines()
         for line in lines:
             url = line.strip()
