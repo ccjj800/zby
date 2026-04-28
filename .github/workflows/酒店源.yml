@@ -22,30 +22,27 @@ jobs:
     - name: 安装依赖
       run: pip install requests
 
-    - name: 运行全部3个脚本
+    - name: 先创建空文件，防止报错
+      run: touch /home/runner/work/zby/zby/jiudianyuan.txt
+
+    - name: 运行全部脚本
       run: |
-        cd "${{ github.workspace }}/py/iptv源收集检测/主频道/专享频道/py/酒店源"
-        
-        # 先创建空文件，防止报错
-        touch "${{ github.workspace }}/jiudianyuan.txt"
-        
-        # 运行脚本
+        cd "py/iptv源收集检测/主频道/专享频道/py/酒店源"
         python iptv.py
         python iptv2.py
         python gxtv.py
 
     - name: 去重 + 清理空行
       run: |
-        cd "${{ github.workspace }}"
+        cd /home/runner/work/zby/zby
         sort -u jiudianyuan.txt -o jiudianyuan.txt
         sed -i '/^$/d' jiudianyuan.txt
 
     - name: 提交更新
       run: |
-        cd "${{ github.workspace }}"
+        cd /home/runner/work/zby/zby
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add jiudianyuan.txt
         git commit -m "✅ 酒店源自动更新"
-        git pull origin main --rebase
         git push
