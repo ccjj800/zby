@@ -1,6 +1,3 @@
-import eventlet
-eventlet.monkey_patch()
-
 import time
 import datetime
 import threading
@@ -10,7 +7,7 @@ import concurrent.futures
 from queue import Queue
 import requests
 
-# ===================== 修复 1：使用最新有效接口 =====================
+# ===================== 接口定义 =====================
 def modify_urls(url):
     modified_urls = []
     try:
@@ -19,12 +16,10 @@ def modify_urls(url):
         base_url = url[:ip_start_index]
         ip_address = url[ip_start_index:ip_end_index]
         port = url[ip_end_index:]
-        # 修复接口，去掉失效参数
         ip_end = "/iptv/live/1000.json"
         for i in range(1, 256):
             modified_ip = f"{ip_address[:-1]}{i}"
-            modified_url = f"{base_url}{modified_ip}{port}{ip_end}"
-            modified_urls.append(modified_url)
+            modified_urls.append(f"{base_url}{modified_ip}{port}{ip_end}")
     except:
         pass
     return modified_urls
@@ -38,24 +33,30 @@ def is_url_accessible(url):
         pass
     return None
 
+# ===================== 读取 IP 文件夹 =====================
 results = []
 urls_all = []
+folder_path = 'ip'
 
-# 读取你的酒店IP文件
-try:
-    with open('../../../../../jiudianyuan.txt', 'w', encoding='utf-8') as f:
-        lines = file.readlines()
-        for line in lines:
-            url = line.strip()
-            if url and not url.startswith('http'):
-                urls_all.append(f"http://{url}")
-except:
-    pass
+if not os.path.exists(folder_path):
+    folder_path = '.'
 
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.txt'):
+        file_path = os.path.join(folder_path, file_name)
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    ip = line.strip()
+                    if ip and not ip.startswith('http'):
+                        urls_all.append(f"http://{ip}")
+        except:
+            continue
+
+# ===================== 扫描可用服务器 =====================
 urls = list(set(urls_all))
 valid_urls = []
 
-# 多线程检测可用IP
 with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
     futures = []
     for url in urls:
@@ -70,7 +71,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
         if res:
             valid_urls.append(res)
 
-# ===================== 修复 2：正确拼接直播地址（之前全错） =====================
+# ===================== 解析直播源 =====================
 for url in valid_urls:
     try:
         base_ip = url.split('//')[1].split('/')[0]
@@ -87,32 +88,29 @@ for url in valid_urls:
             if not name or not urlx or ',' in urlx:
                 continue
 
-            # 正确拼接播放地址
             if urlx.startswith('http'):
                 play_url = urlx
             else:
                 play_url = f"{base_url}/{urlx.lstrip('/')}"
 
-            # 频道名称清洗
-            name = re.sub(r'高清|超清|标清|频道|测试|HD| |\(|\)|-|K1|K2|W|w', '', name)
+            name = re.sub(r'高清|超清|标清|频道|测试|HD| |\(|\)|-|K\d|W|w', '', name)
             name = re.sub(r'中央|央视', 'CCTV', name)
             name = re.sub(r'CCTV(\d+)台', r'CCTV\1', name)
 
-            # 只保留有效频道
-            if len(name) < 20 and (',' not in play_url):
+            if len(name) < 20:
                 results.append(f"{name},{play_url}")
     except:
         continue
 
-# 去重
+# ===================== 输出到仓库根目录 =====================
+output_path = os.path.abspath('../../../../../jiudianyuan.txt')
 results = sorted(list(set(results)))
 
-# ===================== 修复 3：直接输出到 根目录 / jiudianyuan.txt =====================
-with open('../../../../../jiudianyuan.txt', 'w', encoding='utf-8') as f:
+with open(output_path, 'w', encoding='utf-8') as f:
     for line in results:
         f.write(line + '\n')
 
-# 清理临时文件（不影响结果）
+# ===================== 清理临时文件 =====================
 temp_files = ["iptv0.txt", "iptv1.txt", "1.txt", "去重1.txt",
               "a1.txt","b1.txt","c1.txt","d1.txt","e1.txt","f1.txt","g1.txt",
               "h1.txt","i1.txt","j1.txt","k1.txt","l1.txt","m1.txt","n1.txt",
@@ -123,5 +121,5 @@ for f in temp_files:
     except:
         pass
 
-print(f"✅ 脚本运行完成！有效直播源：{len(results)} 个")
-print(f"✅ 文件已输出到：仓库根目录 / jiudianyuan.txt")
+print("✅ 脚本运行完成！")
+print(f"✅ 有效直播源：{len(results)} 个")
