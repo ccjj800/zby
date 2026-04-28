@@ -15,31 +15,30 @@ jobs:
       uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+        persist-credentials: false
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: 3.x
+        python-version: 3.11
 
-    - name: Install dependencies
-      run: pip install selenium requests futures eventlet
+    - name: 安装依赖
+      run: pip install selenium requests futures
 
-    - name: 运行脚本并指定输出地址
+    - name: 运行脚本并输出到根目录
       run: |
         cd "${{ github.workspace }}/py/iptv源收集检测/主频道/专享频道/py/酒店源"
         
-        # 运行并强制输出到 仓库根目录 / jiudianyuan.txt（你要的最终文件）
+        # 全部合并输出到 根目录 / jiudianyuan.txt
         python iptv.py > ${{ github.workspace }}/jiudianyuan.txt
         python iptv2.py >> ${{ github.workspace }}/jiudianyuan.txt
-        
-        # 重点：gxtv.txt 直接输出到根目录
-        python gxtv.py > ${{ github.workspace }}/gxtv.txt
+        python gxtv.py >> ${{ github.workspace }}/jiudianyuan.txt
 
     - name: 提交更新
       run: |
         cd $GITHUB_WORKSPACE
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add .
-        git commit -m "更新酒店源到根目录"
-        git push
+        git add jiudianyuan.txt
+        git commit -m "更新酒店源 jiudianyuan.txt"
+        git push https://${{ secrets.GITHUB_TOKEN }}@github.com/ccjj800/zby.git
