@@ -98,7 +98,7 @@ final = sorted(list(set(results)))
 # 第二个脚本 iptv2.py 使用 'a'
 # 第三个脚本 gxtv.py 使用 'a'
 
-with open('../../../../../jiudianyuan.txt', 'a', encoding='utf-8') as f:
+with open('/home/runner/work/zby/zby/jiudianyuan.txt', 'a', encoding='utf-8') as f:
     for line in final:
         f.write(line + '\n')
 
