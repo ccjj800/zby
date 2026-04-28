@@ -1,15 +1,11 @@
-import eventlet
-eventlet.monkey_patch()
-
+# 已完全删除 eventlet → 永远不会报模块缺失错误！
 import time
-import datetime
 import os
 import re
 import concurrent.futures
-from queue import Queue
 import requests
 
-# ===================== 修复接口：光迅专用接口 =====================
+# ===================== 光迅专用接口 =====================
 def modify_urls(url):
     modified_urls = []
     try:
@@ -39,7 +35,7 @@ results = []
 urls_all = []
 
 try:
-    with open('py/iptv源收集检测/主频道/专享频道/py/酒店源/光迅.ip', 'r', encoding='utf-8') as file:
+    with open('光迅.ip', 'r', encoding='utf-8') as file:
         for line in file:
             ip = line.strip()
             if ip:
@@ -76,7 +72,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
 
 valid_urls = sorted(set(valid_urls))
 
-# ===================== 核心修复：正确解析光迅 txt 格式 =====================
+# ===================== 解析光迅 txt 格式 =====================
 for url in valid_urls:
     try:
         host = url.split("//")[1].split("/")[0]
@@ -93,13 +89,11 @@ for url in valid_urls:
                 name = name.strip()
                 src = src.strip()
                 
-                # 【修复】正确拼接直播地址（之前完全错误）
                 if src.startswith('http'):
                     play_url = src
                 else:
                     play_url = f"http://{host}/{src.lstrip('/')}"
                 
-                # 名称清洗
                 name = re.sub(r'高清|超清|标清|频道|测试|HD|\s|-|\(|\)|K\d|W', '', name)
                 name = re.sub(r'中央|央视', 'CCTV', name)
                 name = re.sub(r'CCTV(\d+)台', r'CCTV\1', name)
@@ -112,21 +106,12 @@ for url in valid_urls:
 # 去重
 results = sorted(set(results))
 
-# ===================== 直接输出到 仓库根目录：jiudianyuan.txt =====================
-with open('jiudianyuan.txt', 'a', encoding='utf-8') as f:
+# ===================== 输出到根目录（追加模式） =====================
+with open('../../../../../jiudianyuan.txt', 'a', encoding='utf-8') as f:
     for line in results:
         f.write(line + '\n')
 
-# ===================== 清理所有临时文件 =====================
-temp_files = ["gxtv0.txt","gxtv1.txt","3.txt","去重3.txt","a3.txt","b3.txt","z3.txt"]
-for fn in temp_files:
-    try:
-        os.remove(fn)
-    except:
-        pass
-
+# ===================== 清理 =====================
 print("="*50)
-print(f"✅ 光迅酒店源脚本执行完成！")
-print(f"✅ 有效源数量：{len(results)} 个")
-print(f"✅ 已输出到：仓库根目录 / jiudianyuan.txt")
+print(f"✅ 光迅源执行完成！有效源：{len(results)} 个")
 print("="*50)
