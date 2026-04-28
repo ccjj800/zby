@@ -1,19 +1,24 @@
 name: 酒店源
 on:
- schedule:
-   - cron: 0 */6 * * *
- workflow_dispatch:
+  schedule:
+    - cron: 0 */6 * * *
+  workflow_dispatch:
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v2
-  
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        token: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
 
@@ -23,15 +28,21 @@ jobs:
 
     - name: run iptvpy
       run: |
-       python ${{ github.workspace }}/py/iptv源收集检测/主频道/专享频道/py/酒店源/iptv.py
-       python ${{ github.workspace }}/py/iptv源收集检测/主频道/专享频道/py/酒店源/iptv2.py
-       python ${{ github.workspace }}/py/iptv源收集检测/主频道/专享频道/py/酒店源/gxtv.py
-      
+        cd "${{ github.workspace }}/py/iptv源收集检测/主频道/专享频道/py/酒店源"
+        python iptv.py
+        python iptv2.py
+        python gxtv.py
+
+        # 核心：合并所有源 → 根目录 / jiudianyuan.txt
+        cat *.txt > ${{ github.workspace }}/jiudianyuan.txt
+        # 如果有m3u格式也一起输出
+        cat *.m3u > ${{ github.workspace }}/jiudianyuan.m3u 2>/dev/null || true
+
     - name: 提交更新
       run: |
         cd $GITHUB_WORKSPACE
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add .
-        git commit -m "更新酒店源ip"
+        git commit -m "更新酒店源 jiudianyuan.txt"
         git push
