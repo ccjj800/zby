@@ -106,7 +106,7 @@ for url in valid_urls:
 output_path = os.path.abspath('../../../../../jiudianyuan.txt')
 results = sorted(list(set(results)))
 
-with open(output_path, 'w', encoding='utf-8') as f:
+with open('/home/runner/work/zby/zby/jiudianyuan.txt', 'w', encoding='utf-8') as f:
     for line in results:
         f.write(line + '\n')
 
