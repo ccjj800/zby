@@ -1,16 +1,12 @@
-import eventlet
-eventlet.monkey_patch()
+# ！！！已经彻底删除 eventlet，不会再报任何模块错误！！！
 
 import time
-import datetime
-import threading
 import os
 import re
 import concurrent.futures
-from queue import Queue
 import requests
 
-# ========================= 修复：有效接口 + 稳定检测 =========================
+# ========================= 接口生成 =========================
 def modify_urls(url):
     modified_urls = []
     try:
@@ -35,10 +31,10 @@ def is_url_accessible(url):
     except:
         return None
 
-# ========================= 读取IP文件夹（修复路径错误） =========================
+# ========================= 读取 IP 文件夹 =========================
 results = []
 urls_all = []
-folder_path = 'py/iptv源收集检测/主频道/专享频道/py/酒店源/ip'
+folder_path = 'ip'
 
 if not os.path.exists(folder_path):
     folder_path = '.'
@@ -55,7 +51,7 @@ for file_name in os.listdir(folder_path):
         except:
             continue
 
-# 扫描可用服务器
+# ========================= 扫描可用服务器 =========================
 valid_urls = []
 with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
     futures = [executor.submit(is_url_accessible, mu) for url in set(urls_all) for mu in modify_urls(url)]
@@ -64,7 +60,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
         if res:
             valid_urls.append(res)
 
-# ========================= 核心修复：正确拼接直播地址 =========================
+# ========================= 解析直播源 =========================
 for url in valid_urls:
     try:
         base_ip = url.split('//')[1].split('/')[0]
@@ -80,13 +76,11 @@ for url in valid_urls:
             if not name or not u or ',' in u:
                 continue
 
-            # 正确拼接播放地址（之前全错，这是源无效的核心）
             if u.startswith('http'):
                 play_url = u
             else:
                 play_url = f"{base}/{u.lstrip('/')}"
 
-            # 频道名称清洗
             name = re.sub(r'高清|超清|标清|频道|测试|HD|\s|-|\(|\)|K\d|W', '', name)
             name = re.sub(r'中央|央视', 'CCTV', name)
             name = re.sub(r'CCTV(\d+)台', r'\1', name)
@@ -96,24 +90,20 @@ for url in valid_urls:
     except:
         continue
 
-# ========================= 输出到 仓库根目录：jiudianyuan.txt =========================
+# ========================= 输出到根目录 =========================
 final = sorted(list(set(results)))
+
+# 重要：
+# 第一个脚本 iptv.py 使用 'w'
+# 第二个脚本 iptv2.py 使用 'a'
+# 第三个脚本 gxtv.py 使用 'a'
+
 with open('../../../../../jiudianyuan.txt', 'a', encoding='utf-8') as f:
     for line in final:
         f.write(line + '\n')
 
-# ========================= 自动清理垃圾临时文件 =========================
-temp_files = ["itv0.txt","itv1.txt","2.txt","去重2.txt",
-              "a2","b2","c2","d2","e2","f2","g2","h2","i2","j2","k2","l2","m2","n2","o2","p2","q2","r2","s2","t2","z2"]
-for fn in temp_files:
-    try:
-        os.remove(fn)
-        os.remove(fn+".txt")
-    except:
-        pass
-
+# ========================= 清理 =========================
 print("="*50)
 print(f"✅ 脚本运行完成！")
-print(f"✅ 有效直播源数量：{len(final)} 个")
-print(f"✅ 已输出到：仓库根目录 / jiudianyuan.txt")
+print(f"✅ 有效直播源：{len(final)} 个")
 print("="*50)
