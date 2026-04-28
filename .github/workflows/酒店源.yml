@@ -13,11 +13,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: 拉取最新
-      run: git pull origin main
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -27,15 +22,14 @@ jobs:
     - name: 安装依赖
       run: pip install requests
 
-    - name: 运行脚本
+    - name: 运行全部脚本
       run: |
         cd "${{ github.workspace }}/py/iptv源收集检测/主频道/专享频道/py/酒店源"
-        
         python iptv.py
         python iptv2.py
         python gxtv.py
 
-    - name: 去重 + 清理
+    - name: 去重 + 清理空行
       run: |
         cd "${{ github.workspace }}"
         sort -u jiudianyuan.txt -o jiudianyuan.txt
@@ -43,9 +37,9 @@ jobs:
 
     - name: 提交更新
       run: |
-        cd "${{ github.workspace }}"
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add jiudianyuan.txt
         git commit -m "✅ 酒店源自动更新"
+        git pull origin main --rebase
         git push
