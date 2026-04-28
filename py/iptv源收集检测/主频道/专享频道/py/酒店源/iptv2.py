@@ -98,7 +98,7 @@ for url in valid_urls:
 
 # ========================= 输出到 仓库根目录：jiudianyuan.txt =========================
 final = sorted(list(set(results)))
-with open('/github/workspace/jiudianyuan.txt', 'w', encoding='utf-8') as f:
+with open('../../../../../jiudianyuan.txt', 'a', encoding='utf-8') as f:
     for line in final:
         f.write(line + '\n')
 
