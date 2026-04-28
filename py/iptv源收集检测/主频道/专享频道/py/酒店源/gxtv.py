@@ -107,7 +107,7 @@ for url in valid_urls:
 results = sorted(set(results))
 
 # ===================== 输出到根目录（追加模式） =====================
-with open('../../../../../jiudianyuan.txt', 'a', encoding='utf-8') as f:
+with open('/home/runner/work/zby/zby/jiudianyuan.txt', 'a', encoding='utf-8') as f:
     for line in results:
         f.write(line + '\n')
 
