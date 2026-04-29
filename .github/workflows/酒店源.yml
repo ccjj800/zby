@@ -14,8 +14,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        persist-credentials: false
-        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -26,7 +25,7 @@ jobs:
       run: pip install requests
 
     - name: 先创建空文件，防止报错
-      run: touch /home/runner/work/zby/zby/jiudianyuan.txt
+      run: touch jiudianyuan.txt
 
     - name: 运行全部脚本
       run: |
@@ -37,15 +36,13 @@ jobs:
 
     - name: 去重 + 清理空行
       run: |
-        cd /home/runner/work/zby/zby
         sort -u jiudianyuan.txt -o jiudianyuan.txt
         sed -i '/^$/d' jiudianyuan.txt
 
     - name: 提交更新（无变化不报错）
       run: |
-        cd /home/runner/work/zby/zby
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add jiudianyuan.txt
-        git commit -m "✅ 酒店源自动更新" || echo "没有文件变化，无需提交"
-        git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+        git commit -m "✅ 酒店源自动更新" || echo "无变化，跳过提交"
+        git push
