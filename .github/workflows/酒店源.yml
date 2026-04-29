@@ -13,6 +13,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -38,11 +41,11 @@ jobs:
         sort -u jiudianyuan.txt -o jiudianyuan.txt
         sed -i '/^$/d' jiudianyuan.txt
 
-    - name: 提交更新
+    - name: 提交更新（无变化不报错）
       run: |
         cd /home/runner/work/zby/zby
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add jiudianyuan.txt
-        git commit -m "✅ 酒店源自动更新"
-        git push
+        git commit -m "✅ 酒店源自动更新" || echo "没有文件变化，无需提交"
+        git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
